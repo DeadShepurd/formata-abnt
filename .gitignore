@@ -1,0 +1,7 @@
+node_modules/
+www/
+dist/
+test/saida*.docx
+test/pdf/
+*.log
+.DS_Store

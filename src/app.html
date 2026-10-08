@@ -1,0 +1,435 @@
+<title>Formata ABNT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Literata:opsz,wght@7..72,500;7..72,700&family=Arimo:ital,wght@0,400;0,700;1,400;1,700&family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap">
+<style>
+/* Layout: uma coluna de app de celular; navegação fixa embaixo; no computador a coluna fica centralizada como uma folha */
+:root {
+  --paper: #f3f5fa;
+  --sheet: #ffffff;
+  --ink: #161c31;
+  --ink-2: #4b5472;
+  --ink-3: #7b839e;
+  --rule: #dce1ec;
+  --pen: #2340c4;
+  --pen-ink: #ffffff;
+  --pen-soft: #e6ebfc;
+  --t-titulo: #2340c4;
+  --t-citacao: #7b3db5;
+  --t-ref: #0d7666;
+  --t-ilustra: #a85a00;
+  --t-texto: #4b5472;
+  --t-skip: #8f96ad;
+  --warn: #9a4b00;
+  --warn-soft: #fff3e3;
+  --ok: #0d7666;
+  --shadow: 0 1px 2px rgba(22, 28, 49, .06), 0 6px 20px rgba(22, 28, 49, .06);
+  --f-display: "Literata", Georgia, "Times New Roman", serif;
+  --f-ui: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --f-doc: "Arimo", Arial, "Liberation Sans", Helvetica, sans-serif;
+  --nav-h: 64px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0e1222; --sheet: #161b2f; --ink: #e8ebf6; --ink-2: #aab1cb; --ink-3: #7f87a5; --rule: #2a3150;
+    --pen: #8fa3ff; --pen-ink: #0e1222; --pen-soft: #212a52;
+    --t-titulo: #8fa3ff; --t-citacao: #c9a2f0; --t-ref: #5fd0bd; --t-ilustra: #f0b064; --t-texto: #aab1cb; --t-skip: #6d7593;
+    --warn: #f0b064; --warn-soft: #2e2416; --ok: #5fd0bd;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0e1222; --sheet: #161b2f; --ink: #e8ebf6; --ink-2: #aab1cb; --ink-3: #7f87a5; --rule: #2a3150;
+  --pen: #8fa3ff; --pen-ink: #0e1222; --pen-soft: #212a52;
+  --t-titulo: #8fa3ff; --t-citacao: #c9a2f0; --t-ref: #5fd0bd; --t-ilustra: #f0b064; --t-texto: #aab1cb; --t-skip: #6d7593;
+  --warn: #f0b064; --warn-soft: #2e2416; --ok: #5fd0bd;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.25);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: var(--paper); color: var(--ink); font: 16px/1.5 var(--f-ui); -webkit-text-size-adjust: 100%; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--pen); outline-offset: 2px; border-radius: 6px; }
+
+.wrap { max-width: 680px; margin: 0 auto; padding-inline: 16px; padding-block: 0 calc(var(--nav-h) + 24px + env(safe-area-inset-bottom, 0px)); }
+
+/* topo */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--paper); background: color-mix(in srgb, var(--paper) 88%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--rule); }
+.top-in { max-width: 680px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 12px; }
+.brand { font-family: var(--f-display); font-weight: 700; font-size: 20px; letter-spacing: -.01em; display: flex; align-items: baseline; gap: 6px; }
+.brand b { color: var(--pen); font-weight: 700; }
+.profile { margin-left: auto; font: 500 11px/1.2 var(--f-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--ink-2); border: 1px solid var(--rule); border-radius: 999px; padding: 6px 10px; background: var(--sheet); white-space: nowrap; }
+
+h1.view-title { font-family: var(--f-display); font-weight: 700; font-size: 26px; line-height: 1.2; margin: 22px 0 6px; text-wrap: balance; letter-spacing: -.01em; }
+.lede { color: var(--ink-2); margin: 0 0 18px; max-width: 60ch; }
+h2.sec { font: 700 12px/1.2 var(--f-ui); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); margin: 26px 0 10px; }
+
+.card { background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; padding: 16px; }
+.stack { display: grid; gap: 12px; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 18px; border-radius: 12px; border: 1px solid var(--rule); background: var(--sheet); font-weight: 700; }
+.btn.primary { background: var(--pen); color: var(--pen-ink); border-color: var(--pen); }
+.btn.block { width: 100%; }
+.btn:disabled { opacity: .5; cursor: default; }
+.btn svg { width: 20px; height: 20px; flex: none; }
+.link { background: none; border: 0; padding: 0; color: var(--pen); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+
+/* banner de exemplo */
+.banner { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: 12px; background: var(--pen-soft); color: var(--ink); border: 1px dashed color-mix(in srgb, var(--pen) 45%, transparent); margin-top: 16px; }
+.banner strong { color: var(--pen); }
+.banner p { margin: 0; font-size: 14px; }
+
+/* importar */
+.drop { display: grid; gap: 14px; justify-items: start; padding: 20px 16px; border-radius: 16px; background: var(--sheet); border: 1.5px dashed var(--rule); }
+.drop.over { border-color: var(--pen); background: var(--pen-soft); }
+.drop p { margin: 0; color: var(--ink-2); font-size: 14px; }
+.file-name { font: 500 13px/1.3 var(--f-mono); color: var(--ink-2); word-break: break-all; }
+textarea, input[type=text], input[type=number] { width: 100%; border: 1px solid var(--rule); background: var(--sheet); border-radius: 10px; padding: 11px 12px; line-height: 1.45; }
+textarea { min-height: 110px; resize: vertical; }
+textarea:focus, input:focus { outline: 2px solid var(--pen); outline-offset: -1px; border-color: transparent; }
+.steps { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; counter-reset: s; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: start; font-size: 15px; color: var(--ink-2); }
+.steps li::before { content: counter(s); width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--pen-soft); color: var(--pen); font: 700 13px/1 var(--f-mono); }
+.steps b { color: var(--ink); }
+
+.stats { display: flex; flex-wrap: wrap; gap: 6px 14px; font: 500 13px/1.4 var(--f-mono); color: var(--ink-2); }
+
+/* estrutura */
+.filters { display: flex; gap: 8px; overflow-x: auto; padding: 2px 16px 6px; margin-inline: -16px; scrollbar-width: none; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 53px); z-index: 4; background: var(--paper); padding-block: 10px; }
+.filters::-webkit-scrollbar { display: none; }
+.chip { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--rule); background: var(--sheet); font-size: 14px; font-weight: 700; color: var(--ink-2); }
+.chip .n { font: 500 12px/1 var(--f-mono); color: var(--ink-3); }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.chip[aria-pressed="true"] .n { color: var(--paper); opacity: .7; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: none; }
+
+.blist { list-style: none; margin: 0; padding: 0; background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; }
+.blist li + li { border-top: 1px solid var(--rule); }
+.row { width: 100%; display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 12px; align-items: start; text-align: left; padding: 12px 14px; background: none; border: 0; }
+.row:active { background: var(--pen-soft); }
+.tag { --c: var(--t-texto); display: inline-flex; flex-direction: column; align-items: flex-start; gap: 2px; font: 700 12px/1.15 var(--f-ui); color: var(--c); padding-top: 2px; }
+.tag .num { font: 500 12px/1 var(--f-mono); color: var(--ink-3); }
+.tag .lbl { display: inline-flex; align-items: center; gap: 6px; }
+.tag.changed .lbl::after { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--warn); }
+.g-titulo { --c: var(--t-titulo); } .g-citacao { --c: var(--t-citacao); } .g-ref { --c: var(--t-ref); } .g-ilustra { --c: var(--t-ilustra); } .g-texto { --c: var(--t-texto); } .g-skip { --c: var(--t-skip); }
+.prev { font: 14px/1.45 var(--f-doc); color: var(--ink); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.prev.h { font-weight: 700; }
+.prev.caps { text-transform: uppercase; }
+.prev.quote { font-size: 12.5px; padding-left: 14px; border-left: 2px solid var(--t-citacao); color: var(--ink-2); }
+.prev.skip { color: var(--ink-3); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--ink-3) 60%, transparent); }
+.prev.media { font-family: var(--f-mono); font-size: 12.5px; color: var(--ink-2); }
+.prev.ref { font-size: 13px; }
+.empty { padding: 24px 16px; text-align: center; color: var(--ink-3); }
+
+/* folha (bottom sheet) */
+.scrim { position: fixed; inset: 0; background: rgba(10, 14, 28, .45); z-index: 20; opacity: 0; transition: opacity .18s; }
+.scrim.open { opacity: 1; }
+.sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 21; background: var(--sheet); border-radius: 18px 18px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,.2); max-height: 88vh; display: flex; flex-direction: column; transform: translateY(100%); transition: transform .22s ease; max-width: 680px; margin: 0 auto; padding-bottom: env(safe-area-inset-bottom, 0px); }
+.sheet.open { transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) { .sheet, .scrim { transition: none; } }
+.sheet-head { padding: 10px 16px 0; }
+.grab { width: 40px; height: 4px; border-radius: 4px; background: var(--rule); margin: 0 auto 10px; }
+.sheet-text { font: 14px/1.5 var(--f-doc); color: var(--ink); max-height: 22vh; overflow: auto; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 10px; background: var(--paper); overflow-wrap: anywhere; }
+.sheet-body { padding: 12px 16px 16px; overflow: auto; }
+.types { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.type-opt { display: grid; gap: 2px; text-align: left; padding: 10px 12px; min-height: 52px; border-radius: 12px; border: 1px solid var(--rule); background: var(--sheet); }
+.type-opt .t { font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; color: var(--c, var(--ink)); }
+.type-opt .h { font-size: 12px; color: var(--ink-3); line-height: 1.3; }
+.type-opt[aria-pressed="true"] { border-color: var(--c, var(--pen)); box-shadow: inset 0 0 0 1px var(--c, var(--pen)); background: color-mix(in srgb, var(--c, var(--pen)) 9%, var(--sheet)); }
+.sheet-actions { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-top: 14px; flex-wrap: wrap; }
+.check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: var(--ink-2); }
+.check input { width: 20px; height: 20px; margin: 1px 0 0; accent-color: var(--pen); flex: none; }
+
+/* formulário */
+.field { display: grid; gap: 6px; }
+.field label, .field .lab { font-weight: 700; font-size: 14px; }
+.field .help { font-size: 13px; color: var(--ink-3); margin: 0; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 420px) { .grid2 { grid-template-columns: 1fr; } }
+.seg { display: inline-grid; grid-auto-flow: column; border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; background: var(--sheet); }
+.seg button { border: 0; background: none; padding: 10px 14px; min-height: 44px; font-weight: 700; color: var(--ink-2); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.seg button + button { border-left: 1px solid var(--rule); }
+.toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.switch { position: relative; width: 50px; height: 30px; flex: none; }
+.switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.switch span { position: absolute; inset: 0; border-radius: 999px; background: var(--rule); transition: background .15s; pointer-events: none; }
+.switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: var(--sheet); box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .15s; }
+.switch input:checked + span { background: var(--pen); }
+.switch input:checked + span::after { transform: translateX(20px); }
+.switch input:focus-visible + span { outline: 2px solid var(--pen); outline-offset: 2px; }
+details.more { border-top: 1px solid var(--rule); padding-top: 12px; }
+details.more summary { font-weight: 700; cursor: pointer; color: var(--pen); list-style: none; }
+details.more summary::-webkit-details-marker { display: none; }
+details.more summary::before { content: "+ "; font-family: var(--f-mono); }
+details.more[open] summary::before { content: "– "; }
+
+/* baixar */
+.spec { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 16px; align-items: center; }
+@media (max-width: 380px) { .spec { grid-template-columns: 1fr; justify-items: center; } }
+.page-svg { width: 132px; height: auto; display: block; }
+.page-svg .pg { fill: var(--sheet); stroke: var(--ink-3); stroke-width: .8; }
+.page-svg .ar { fill: var(--pen-soft); stroke: var(--pen); stroke-width: .6; stroke-dasharray: 2 2; }
+.page-svg .ln { stroke: var(--ink-3); stroke-width: 1.4; stroke-linecap: round; opacity: .55; }
+.page-svg .lq { stroke: var(--t-citacao); stroke-width: 1.1; stroke-linecap: round; opacity: .8; }
+.page-svg text { font: 500 8px var(--f-mono); fill: var(--ink-2); }
+.page-svg .pn { font: 700 7px var(--f-mono); fill: var(--pen); }
+.rules { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 14px; }
+.rules li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; border-bottom: 1px dotted var(--rule); padding-bottom: 5px; }
+.rules li span:last-child { font: 500 13px/1.4 var(--f-mono); color: var(--ink); text-align: right; }
+.rules li span:first-child { color: var(--ink-2); }
+.parts { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.parts li { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--rule); font-size: 15px; }
+.parts li:last-child { border-bottom: 0; }
+.parts .st { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font: 700 12px/1 var(--f-mono); }
+.parts .yes .st { background: color-mix(in srgb, var(--ok) 16%, transparent); color: var(--ok); }
+.parts .no .st { background: var(--paper); color: var(--ink-3); border: 1px solid var(--rule); }
+.parts .no .nm { color: var(--ink-3); }
+.parts .meta { font: 500 12px/1.2 var(--f-mono); color: var(--ink-3); }
+.warns { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.warns li { background: var(--warn-soft); color: var(--warn); border-radius: 10px; padding: 10px 12px; font-size: 14px; display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; }
+.warns li .link { color: var(--warn); flex: none; }
+.note { font-size: 13px; color: var(--ink-3); margin: 10px 0 0; }
+
+
+/* tipos de trabalho */
+.kinds { display: grid; gap: 8px; }
+.kind { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 12px; align-items: start; text-align: left; width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--rule); background: var(--sheet); }
+.kind .rd { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--ink-3); margin-top: 2px; display: grid; place-items: center; }
+.kind .nm { font-weight: 700; font-size: 16px; }
+.kind .ht { font-size: 13px; color: var(--ink-3); line-height: 1.35; }
+.kind[aria-checked="true"] { border-color: var(--pen); box-shadow: inset 0 0 0 1px var(--pen); }
+.kind[aria-checked="true"] .rd { border-color: var(--pen); }
+.kind[aria-checked="true"] .rd::after { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--pen); }
+.kind .later { font: 500 11px/1 var(--f-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); margin-left: 6px; }
+.kind-pill { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; font-size: 14px; color: var(--ink-2); margin: -6px 0 16px; }
+.kind-pill strong { color: var(--ink); }
+.opt { font-weight: 400; color: var(--ink-3); }
+
+/* navegação */
+.nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--sheet); border-top: 1px solid var(--rule); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.nav-in { max-width: 680px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); height: var(--nav-h); }
+.nav button { background: none; border: 0; display: grid; justify-items: center; align-content: center; gap: 3px; font-size: 12px; font-weight: 700; color: var(--ink-3); position: relative; }
+.nav button svg { width: 24px; height: 24px; }
+.nav button[aria-current="page"] { color: var(--pen); }
+.nav button[aria-current="page"]::before { content: ""; position: absolute; top: 0; left: 28%; right: 28%; height: 3px; border-radius: 0 0 3px 3px; background: var(--pen); }
+
+.toast { position: fixed; left: 50%; bottom: calc(var(--nav-h) + 16px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 30; background: var(--ink); color: var(--paper); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 700; box-shadow: var(--shadow); max-width: calc(100% - 32px); }
+.spin { width: 18px; height: 18px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: sp .7s linear infinite; }
+@keyframes sp { to { transform: rotate(360deg); } }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">Formata <b>ABNT</b></div>
+    <div class="profile" id="profileChip">UNICID · Pedagogia</div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- 1. TEXTO -->
+  <section id="v-texto" data-view="texto">
+    <h1 class="view-title">Coloque seu trabalho nas regras</h1>
+    <p class="lede">Importe o trabalho já escrito. O app reconhece títulos, citações e referências, você confere tocando, e ele entrega o .docx formatado no padrão da UNICID.</p>
+
+    <h2 class="sec" style="margin-top:4px" id="kindsLabel">Que trabalho você vai entregar?</h2>
+    <div class="kinds" id="kinds" role="radiogroup" aria-labelledby="kindsLabel"></div>
+    <div style="height:18px"></div>
+
+    <div class="drop" id="drop">
+      <button class="btn primary" id="pickBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 18v-6"/><path d="m9 15 3-3 3 3"/></svg>
+        Importar arquivo .docx
+      </button>
+      <input type="file" id="fileInput" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
+      <p>Do Word ou do Google Docs (Arquivo › Baixar › Microsoft Word). Negrito, itálico, imagens, tabelas e notas de rodapé vêm junto.</p>
+      <div class="file-name" id="fileStatus" hidden></div>
+    </div>
+
+    <div class="banner" id="sampleBanner">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="flex:none;color:var(--pen);margin-top:1px"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>
+      <p><strong>Trabalho de exemplo carregado.</strong> Veja na aba Estrutura como o app separa cada parte. Ao importar o seu arquivo, o exemplo some.</p>
+    </div>
+
+    <h2 class="sec">Ou cole o texto</h2>
+    <div class="stack">
+      <textarea id="pasteArea" placeholder="Cole aqui o texto do trabalho, do título da introdução até as referências." aria-label="Texto colado"></textarea>
+      <button class="btn block" id="usePaste" type="button" disabled>Usar o texto colado</button>
+    </div>
+
+    <h2 class="sec">Como funciona</h2>
+    <ol class="steps">
+      <li><span><b>Importe</b> o arquivo com o texto pronto. O app não muda nenhuma palavra.</span></li>
+      <li><span><b>Confira a estrutura.</b> Cada parágrafo já vem marcado como título, texto, citação ou referência. Toque para trocar.</span></li>
+      <li><span><b>Preencha os dados</b>: autor, título, disciplina e professor.</span></li>
+      <li><span><b>Baixe o .docx</b> com margens, fontes, espaçamento, capa, sumário e paginação no padrão.</span></li>
+    </ol>
+  </section>
+
+  <!-- 2. ESTRUTURA -->
+  <section id="v-estrutura" data-view="estrutura" hidden>
+    <h1 class="view-title">Confira a estrutura</h1>
+    <p class="lede">Toque num parágrafo para mudar o que ele é. Títulos recebem a numeração automaticamente.</p>
+    <div class="filters" id="filters" role="toolbar" aria-label="Filtrar parágrafos"></div>
+    <ul class="blist" id="blist"></ul>
+  </section>
+
+  <!-- 3. DADOS -->
+  <section id="v-capa" data-view="capa" hidden>
+    <h1 class="view-title">Dados do trabalho</h1>
+    <p class="lede" id="dadosLede">Esses dados montam a capa e os elementos antes da introdução.</p>
+    <div class="kind-pill"><span>Tipo:</span> <strong id="kindName">Trabalho do semestre</strong> <button class="link" type="button" id="kindChange">trocar</button></div>
+    <form id="infoForm" class="stack" autocomplete="off">
+      <div class="card stack">
+        <div class="field"><label for="f-autores">Autor(es)</label><textarea id="f-autores" data-k="autores" rows="2" style="min-height:64px" placeholder="Ex.: Maria Aparecida dos Santos"></textarea><p class="help">Um nome por linha, para trabalhos em grupo.</p></div>
+        <div class="field"><label for="f-titulo">Título</label><input type="text" id="f-titulo" data-k="titulo" placeholder="Ex.: O brincar na Educação Infantil"></div>
+        <div class="field"><label for="f-subtitulo">Subtítulo <span class="opt">(opcional)</span></label><input type="text" id="f-subtitulo" data-k="subtitulo" placeholder="Ex.: práticas lúdicas e desenvolvimento"></div>
+        <div class="field" data-show="trabalho"><label for="f-disciplina">Disciplina</label><input type="text" id="f-disciplina" data-k="disciplina" placeholder="Ex.: Fundamentos da Educação Infantil"></div>
+        <div class="field"><label for="f-orientador" id="orientLabel">Professor(a)</label><input type="text" id="f-orientador" data-k="orientador" placeholder="Ex.: Profa. Dra. Ana Paula Ribeiro"></div>
+        <div class="grid2">
+          <div class="field"><label for="f-cidade">Cidade</label><input type="text" id="f-cidade" data-k="cidade"></div>
+          <div class="field"><label for="f-ano">Ano de entrega</label><input type="number" inputmode="numeric" id="f-ano" data-k="ano"></div>
+        </div>
+        <details class="more">
+          <summary>Instituição e curso</summary>
+          <div class="stack" style="margin-top:12px">
+            <div class="field"><label for="f-instituicao">Instituição</label><input type="text" id="f-instituicao" data-k="instituicao"></div>
+            <div class="field"><label for="f-curso">Curso</label><input type="text" id="f-curso" data-k="curso"></div>
+            <div class="field" data-show="tcc"><label for="f-coorientador">Coorientador(a) <span class="opt">(opcional)</span></label><input type="text" id="f-coorientador" data-k="coorientador"></div>
+            <div class="field" data-show="tcc"><label for="f-natureza">Natureza do trabalho</label><textarea id="f-natureza" data-k="natureza" rows="4"></textarea><p class="help">Aparece na folha de rosto, recuada a 8 cm.</p></div>
+          </div>
+        </details>
+      </div>
+
+      <div data-show="artigo" class="stack">
+        <h2 class="sec">Notas de rodapé dos autores</h2>
+        <div class="card stack">
+          <p class="help" style="margin:0">O manual da UNICID pede, em nota de rodapé, a titulação, o curso e a instituição de cada autor.</p>
+          <div class="field"><label for="f-notaAutores">Sobre os autores</label><input type="text" id="f-notaAutores" data-k="notaAutores" placeholder="Graduando(a) do Curso de Pedagogia da Universidade Cidade de São Paulo."></div>
+          <div class="field"><label for="f-notaOrientador">Sobre o(a) orientador(a)</label><input type="text" id="f-notaOrientador" data-k="notaOrientador" placeholder="Professor(a) orientador(a) do Curso de Pedagogia da Universidade Cidade de São Paulo."></div>
+        </div>
+      </div>
+
+      <h2 class="sec" id="resumoSec">Resumo</h2>
+      <div class="card stack">
+        <div class="field"><label for="f-resumo">Resumo em português</label><textarea id="f-resumo" data-k="resumo" rows="6" placeholder="Parágrafo único, com objetivo, método, resultados e conclusão."></textarea><p class="help" id="resumoCount"></p></div>
+        <div class="field"><label for="f-palavrasChave">Palavras-chave</label><input type="text" id="f-palavrasChave" data-k="palavrasChave" placeholder="Ex.: Brincar. Educação infantil. Ludicidade."><p class="help">De 3 a 5. O app separa por ponto, com inicial maiúscula, como pede o manual da UNICID.</p></div>
+        <div class="field"><label for="f-abstract">Abstract <span class="opt">(opcional)</span></label><textarea id="f-abstract" data-k="abstract" rows="5" placeholder="Resumo em inglês, se o professor pedir."></textarea></div>
+        <div class="field"><label for="f-keywords">Keywords</label><input type="text" id="f-keywords" data-k="keywords" placeholder="Ex.: Play. Early childhood education."></div>
+      </div>
+
+      <div data-show="tcc" class="stack">
+        <h2 class="sec">Elementos do TCC</h2>
+        <div class="card stack">
+          <div class="toggle"><div><div style="font-weight:700">Folha de aprovação</div><p class="help" style="margin:0">Com espaço para as assinaturas da banca.</p></div><label class="switch"><input type="checkbox" id="f-aprovacao" data-k="aprovacao" aria-label="Incluir folha de aprovação"><span></span></label></div>
+          <div class="field" id="bancaField" hidden><label for="f-banca">Banca examinadora</label><textarea id="f-banca" data-k="banca" rows="3" placeholder="Prof(a). Dr(a). Nome – Instituição (um por linha)"></textarea></div>
+          <div class="field"><label for="f-dedicatoria">Dedicatória</label><textarea id="f-dedicatoria" data-k="dedicatoria" rows="2" style="min-height:64px"></textarea></div>
+          <div class="field"><label for="f-agradecimentos">Agradecimentos</label><textarea id="f-agradecimentos" data-k="agradecimentos" rows="4"></textarea></div>
+          <div class="field"><label for="f-epigrafe">Epígrafe</label><textarea id="f-epigrafe" data-k="epigrafe" rows="3" style="min-height:76px" placeholder="Citação na primeira linha&#10;(Autor) na última linha"></textarea></div>
+        </div>
+      </div>
+      <div data-show="artigo" class="stack">
+        <h2 class="sec">Agradecimentos <span class="opt" style="text-transform:none;letter-spacing:0">(opcional)</span></h2>
+        <div class="card"><div class="field"><label for="f-agradecimentosArt">Texto dos agradecimentos</label><textarea id="f-agradecimentosArt" data-k="agradecimentos" rows="3"></textarea><p class="help">No artigo, vão no fim, depois das referências e anexos.</p></div></div>
+      </div>
+
+      <h2 class="sec">Formatação</h2>
+      <div class="card stack">
+        <div class="field"><span class="lab">Fonte</span>
+          <div class="seg" id="fontSeg" role="group" aria-label="Fonte"><button type="button" data-font="Times New Roman">Times New Roman</button><button type="button" data-font="Arial">Arial</button></div>
+        </div>
+        <div class="field" data-show="trabalho artigo"><span class="lab">Entrelinha do texto</span>
+          <div class="seg" id="lineSeg" role="group" aria-label="Entrelinha"><button type="button" data-ent="1.5">1,5</button><button type="button" data-ent="1">Simples</button></div>
+          <p class="help" id="lineHelp"></p>
+        </div>
+        <div class="toggle" data-show="trabalho artigo"><div><div style="font-weight:700">Capa</div><p class="help" style="margin:0">Instituição, curso, autor, título, cidade e ano.</p></div><label class="switch"><input type="checkbox" id="f-capa" data-k="capa" aria-label="Incluir capa"><span></span></label></div>
+        <div class="toggle" data-show="trabalho"><div><div style="font-weight:700">Folha de rosto</div><p class="help" style="margin:0">Repete autor e título, com disciplina e professor.</p></div><label class="switch"><input type="checkbox" id="f-folhaRosto" data-k="folhaRosto" aria-label="Incluir folha de rosto"><span></span></label></div>
+        <div class="toggle" data-show="trabalho"><div><div style="font-weight:700">Sumário</div><p class="help" style="margin:0">Gerado a partir dos títulos, já com as páginas.</p></div><label class="switch"><input type="checkbox" id="f-sumario" data-k="sumario" aria-label="Incluir sumário"><span></span></label></div>
+        <div class="toggle" data-show="trabalho artigo"><div><div style="font-weight:700">Seção principal em página nova</div><p class="help" style="margin:0">Cada título de nível 1 começa no alto de uma página.</p></div><label class="switch"><input type="checkbox" id="f-novaPagina" data-k="novaPagina" aria-label="Seção principal em página nova"><span></span></label></div>
+        <div class="toggle"><div><div style="font-weight:700">Ordenar referências</div><p class="help" style="margin:0">Em ordem alfabética pelo sobrenome.</p></div><label class="switch"><input type="checkbox" id="f-ordenar" data-k="ordenarReferencias" aria-label="Ordenar referências"><span></span></label></div>
+      </div>
+    </form>
+  </section>
+
+  <!-- 4. BAIXAR -->
+  <section id="v-baixar" data-view="baixar" hidden>
+    <h1 class="view-title">Baixar o trabalho</h1>
+    <p class="lede" id="baixarLede">Confira o que vai no arquivo e gere o .docx.</p>
+
+    <div class="card stack">
+      <ul class="parts" id="parts"></ul>
+    </div>
+
+    <div id="warnWrap" hidden>
+      <h2 class="sec">Antes de gerar</h2>
+      <ul class="warns" id="warns"></ul>
+    </div>
+
+    <div style="margin-top:18px" class="stack">
+      <button class="btn primary block" id="genBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
+        <span>Gerar e baixar .docx</span>
+      </button>
+      <p class="note" style="margin:0">O sumário já sai com as páginas calculadas. Ao abrir no Word do computador, aceite atualizar os campos para conferir os números.</p>
+    </div>
+
+    <h2 class="sec">Regras aplicadas</h2>
+    <div class="card spec">
+      <svg class="page-svg" viewBox="-14 -12 238 324" role="img" aria-label="Folha A4 com margens de 3 cm em cima e à esquerda e 2 cm embaixo e à direita">
+        <rect class="pg" x="0" y="0" width="210" height="297" rx="2"/>
+        <rect class="ar" x="30" y="30" width="160" height="247"/>
+        <text class="pn" x="186" y="23" text-anchor="end">12</text>
+        <line class="ln" x1="42" y1="44" x2="96" y2="44" style="stroke:var(--pen);opacity:.9"/>
+        <line class="ln" x1="48" y1="58" x2="184" y2="58"/><line class="ln" x1="36" y1="66" x2="184" y2="66"/><line class="ln" x1="36" y1="74" x2="184" y2="74"/><line class="ln" x1="36" y1="82" x2="140" y2="82"/>
+        <line class="lq" x1="76" y1="96" x2="184" y2="96"/><line class="lq" x1="76" y1="101" x2="184" y2="101"/><line class="lq" x1="76" y1="106" x2="184" y2="106"/><line class="lq" x1="76" y1="111" x2="150" y2="111"/>
+        <line class="ln" x1="48" y1="126" x2="184" y2="126"/><line class="ln" x1="36" y1="134" x2="184" y2="134"/><line class="ln" x1="36" y1="142" x2="184" y2="142"/><line class="ln" x1="36" y1="150" x2="184" y2="150"/><line class="ln" x1="36" y1="158" x2="120" y2="158"/>
+        <line class="ln" x1="48" y1="172" x2="184" y2="172"/><line class="ln" x1="36" y1="180" x2="184" y2="180"/><line class="ln" x1="36" y1="188" x2="184" y2="188"/><line class="ln" x1="36" y1="196" x2="160" y2="196"/>
+        <text x="105" y="-3" text-anchor="middle">3 cm</text>
+        <text x="-3" y="150" text-anchor="middle" transform="rotate(-90 -3 150)">3 cm</text>
+        <text x="105" y="309" text-anchor="middle">2 cm</text>
+        <text x="216" y="150" text-anchor="middle" transform="rotate(90 216 150)">2 cm</text>
+      </svg>
+      <ul class="rules" id="rules"></ul>
+    </div>
+    <p class="note" id="rulesNote">Regras das “Normas para elaboração de artigo científico” da Biblioteca Prof. Lúcio de Sousa (UNICID), completadas pela ABNT NBR 14724:2024 para capa, folha de rosto e sumário.</p>
+  </section>
+</main>
+
+<nav class="nav" aria-label="Etapas">
+  <div class="nav-in">
+    <button type="button" data-go="texto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>Texto</button>
+    <button type="button" data-go="estrutura"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M8 12h12M8 18h12"/><path d="M4 12h.01M4 18h.01"/></svg>Estrutura</button>
+    <button type="button" data-go="capa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M10 17h4"/></svg>Dados</button>
+    <button type="button" data-go="baixar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>Baixar</button>
+  </div>
+</nav>
+
+<div class="scrim" id="scrim" hidden></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
+  <div class="sheet-head"><div class="grab"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
+      <strong id="sheetTitle" style="font-family:var(--f-display);font-size:18px">O que é este parágrafo?</strong>
+      <button class="btn" id="sheetClose" type="button" style="min-height:40px;padding:0 14px">Fechar</button>
+    </div>
+    <div class="sheet-text" id="sheetText"></div>
+  </div>
+  <div class="sheet-body">
+    <div class="types" id="typeGrid"></div>
+    <div class="sheet-actions">
+      <label class="check"><input type="checkbox" id="applyRun"> Aplicar também aos seguintes, até o próximo título</label>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.12.3/mammoth.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@9.7.1/dist/index.iife.js"></script>
+<script>/*@ENGINE@*/</script>
+<script>/*@APP@*/</script>

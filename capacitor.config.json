@@ -1,0 +1,14 @@
+{
+  "appId": "br.formataabnt.app",
+  "appName": "Formata ABNT",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#f3f5fa"
+  },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css",
+      "initialViewportFitValueHint": "cover"
+    }
+  }
+}
