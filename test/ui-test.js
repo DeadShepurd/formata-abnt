@@ -6,8 +6,10 @@ const root = path.join(__dirname, '..');
 let html = fs.readFileSync(path.join(root, 'dist/formata-abnt.html'), 'utf8');
 const mam = fs.readFileSync(path.join(root, 'node_modules/mammoth/mammoth.browser.min.js'), 'utf8');
 const dx = fs.readFileSync(path.join(root, 'node_modules/docx/dist/index.iife.js'), 'utf8');
+const ffl = fs.readFileSync(path.join(root, 'node_modules/fflate/umd/index.js'), 'utf8');
 html = html.replace(/<script src="[^"]*mammoth[^"]*"><\/script>/, () => '<script>' + mam + '</script>')
   .replace(/<script src="[^"]*docx[^"]*"><\/script>/, () => '<script>' + dx + '</script>')
+  .replace(/<script src="[^"]*fflate[^"]*"><\/script>/, () => '<script>' + ffl + '</script>')
   .replace(/<link[^>]*>/g, '');
 const errors = [];
 const dom = new JSDOM('<!doctype html><html><head><meta charset="utf-8"></head><body>' + html + '</body></html>', {
@@ -95,6 +97,33 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   d.querySelector('[data-go="capa"]').click();
   console.log('artigo → rótulo:', d.getElementById('orientLabel').textContent, '| notas visíveis?', !d.getElementById('f-notaAutores').closest('[data-show]').hidden, '| disciplina oculta?', d.getElementById('f-disciplina').closest('[data-show]').hidden, '| entrelinha:', [...d.querySelectorAll('#lineSeg button')].find((b) => b.getAttribute('aria-pressed') === 'true').textContent, '| contagem:', d.getElementById('resumoCount').textContent);
   await gen('saida-ui-artigo.docx');
+
+  // ---------- modelo da faculdade: plano de aula em tabela ----------
+  const pbuf = fs.readFileSync(path.join(__dirname, 'plano-aula.docx'));
+  const pfile = new w.File([pbuf], 'Plano de aula.docx', { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+  if (!pfile.arrayBuffer) pfile.arrayBuffer = async () => pbuf.buffer.slice(pbuf.byteOffset, pbuf.byteOffset + pbuf.length);
+  d.querySelector('[data-go="texto"]').click();
+  Object.defineProperty(inp, 'files', { value: [pfile], configurable: true });
+  inp.dispatchEvent(new w.Event('change'));
+  await sleep(1500);
+  const kindNow = [...d.querySelectorAll('#kinds .kind')].find((k) => k.getAttribute('aria-checked') === 'true');
+  console.log('plano: tipo escolhido sozinho:', kindNow && kindNow.querySelector('.nm').textContent, '| toast:', d.querySelector('#toast').textContent);
+  console.log('plano: tela de ajustes?', !d.getElementById('estruturaModelo').hidden, '| lista de parágrafos oculta?', d.getElementById('estruturaTexto').hidden);
+  console.log('plano: arquivo:', [...d.querySelectorAll('#modelFile span')].map((x) => x.textContent).join(' · '));
+  console.log('plano: ajustes:', [...d.querySelectorAll('#fixes li')].map((l) => l.querySelector('.lb').textContent + ' ' + l.querySelector('.ct').textContent).join(' | '));
+  console.log('plano: avisos:', [...d.querySelectorAll('#modelWarns li')].map((l) => l.textContent).join(' | '));
+  d.querySelector('[data-go="capa"]').click();
+  console.log('plano: dados visíveis:', [...d.querySelectorAll('#v-capa .lab, #v-capa .toggle > div > div')].filter((el) => !el.closest('[hidden]')).map((el) => el.textContent.trim()).join(' / '));
+  console.log('plano: fonte marcada:', [...d.querySelectorAll('#fontSeg button')].find((b) => b.getAttribute('aria-pressed') === 'true').textContent);
+  await gen('saida-ui-modelo.docx');
+  if (captured) {
+    const ab = Buffer.from(await new Promise((res) => { const fr = new w.FileReader(); fr.onload = () => res(fr.result); fr.readAsArrayBuffer(captured); }));
+    const xml = require('fflate').strFromU8(require('fflate').unzipSync(new Uint8Array(ab))['word/document.xml']);
+    const sects = (xml.match(/<w:sectPr/g) || []).length, tbls = (xml.match(/<w:tbl>/g) || []).length;
+    console.log('plano: arquivo gerado tem', tbls, 'tabelas e', sects, 'seção');
+    if (sects !== 1 || tbls !== 2) process.exitCode = 1;
+  }
+  if (!kindNow || !/Modelo/.test(kindNow.textContent)) process.exitCode = 1;
   console.log('erros:', errors.length ? errors : 'nenhum');
   process.exit(errors.length ? 1 : process.exitCode || 0);
 })().catch((e) => { console.error(e); process.exit(1); });

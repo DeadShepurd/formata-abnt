@@ -2,7 +2,20 @@
 
 Aplicativo para celular que coloca trabalhos acadêmicos já escritos nas regras da ABNT e do manual da UNICID. A pessoa importa o arquivo `.docx`, confere a estrutura tocando nos parágrafos e baixa o arquivo formatado. O texto nunca é alterado e não há IA envolvida: tudo funciona por regras, direto no aparelho e sem internet.
 
-Tipos de trabalho: **trabalho do semestre**, **artigo científico** e **TCC**.
+Tipos de trabalho: **trabalho do semestre**, **modelo da faculdade**, **artigo científico** e **TCC**.
+
+### Modelo da faculdade (plano de aula e trabalhos em tabela)
+
+Quando o arquivo segue um modelo pronto — folha deitada, conteúdo em tabelas, logo no cabeçalho — o app reconhece sozinho e **não remonta o documento**: ajusta o próprio `.docx` (`src/modelo.js`). O cabeçalho, as imagens, as bordas e a largura das colunas ficam como estão. O que ele corrige:
+
+- tabelas e frases cortadas entre páginas (comum em arquivo convertido de PDF) voltam a ser uma só;
+- quebras de linha no meio da frase;
+- fonte e tamanho unificados (Arial ou Times New Roman 12) e letras comprimidas normalizadas;
+- espaçamento, recuos e margem interna das células padronizados; altura das linhas ajustada ao texto;
+- referências à esquerda, espaço simples, 6 pt antes e depois, em ordem alfabética;
+- espaço antes de pontuação e `1°` no lugar de `1º`.
+
+Nenhuma palavra é trocada. Trechos que parecem incompletos (terminando em "de", "a", vírgula…) aparecem como aviso para a pessoa conferir.
 
 ## Instalar no celular (Android)
 
@@ -47,12 +60,13 @@ Para outra faculdade ou curso, basta criar um novo perfil com os mesmos campos.
 
 ```
 src/engine.js      motor: lê o .docx, pré-classifica os parágrafos e gera o .docx formatado
+src/modelo.js      modo "Modelo da faculdade": ajusta o .docx original sem refazer o layout
 src/app.js         interface (telas Texto, Estrutura, Dados e Baixar)
 src/app.html       marcação e estilos
 scripts/build.js   monta www/ (app instalado) e dist/ (versão web)
 scripts/icons.py   gera ícone e tela de abertura do Android
 android/           projeto Android (Capacitor)
-test/              TCC de teste e testes automáticos
+test/              TCC e plano de aula fictícios e testes automáticos
 ```
 
 ## Desenvolvimento

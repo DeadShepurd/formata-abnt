@@ -171,6 +171,7 @@ details.more[open] summary::before { content: "– "; }
 /* baixar */
 .spec { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 16px; align-items: center; }
 @media (max-width: 380px) { .spec { grid-template-columns: 1fr; justify-items: center; } }
+.spec.single { grid-template-columns: minmax(0, 1fr); }
 .page-svg { width: 132px; height: auto; display: block; }
 .page-svg .pg { fill: var(--sheet); stroke: var(--ink-3); stroke-width: .8; }
 .page-svg .ar { fill: var(--pen-soft); stroke: var(--pen); stroke-width: .6; stroke-dasharray: 2 2; }
@@ -209,6 +210,26 @@ details.more[open] summary::before { content: "– "; }
 .kind-pill { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; font-size: 14px; color: var(--ink-2); margin: -6px 0 16px; }
 .kind-pill strong { color: var(--ink); }
 .opt { font-weight: 400; color: var(--ink-3); }
+
+
+/* modo modelo */
+.model-file { display: flex; flex-wrap: wrap; gap: 6px 12px; font: 500 12px/1.4 var(--f-mono); color: var(--ink-2); margin: -4px 0 14px; }
+.model-file span { border: 1px solid var(--rule); border-radius: 999px; padding: 3px 9px; background: var(--sheet); }
+.fixes { list-style: none; margin: 0; padding: 0; background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; }
+.fixes li { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 12px 14px; }
+.fixes li + li { border-top: 1px solid var(--rule); }
+.fixes .ck { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--ok) 16%, transparent); color: var(--ok); font: 700 12px/1 var(--f-mono); margin-top: 1px; }
+.fixes .lb { font-weight: 700; font-size: 15px; line-height: 1.35; }
+.fixes .dt { font-size: 13px; color: var(--ink-2); margin-top: 2px; }
+.fixes .ex { font: 400 12px/1.45 var(--f-mono); color: var(--ink-3); margin-top: 6px; display: grid; gap: 2px; overflow-wrap: anywhere; }
+.fixes .ct { font: 500 13px/1.6 var(--f-mono); color: var(--ink-2); }
+.cwarns { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.cwarns li { background: var(--warn-soft); border-radius: 10px; padding: 10px 12px; font-size: 14px; color: var(--warn); }
+.cwarns q { display: block; margin-top: 4px; font: 400 13px/1.45 var(--f-doc); color: var(--ink); quotes: "“" "”"; overflow-wrap: anywhere; }
+.empty-model { background: var(--sheet); border: 1.5px dashed var(--rule); border-radius: 14px; padding: 18px 16px; display: grid; gap: 12px; justify-items: start; }
+.empty-model p { margin: 0; color: var(--ink-2); }
+.detected { margin-top: 16px; padding: 12px 14px; border-radius: 12px; background: color-mix(in srgb, var(--ok) 10%, var(--sheet)); border: 1px solid color-mix(in srgb, var(--ok) 35%, transparent); font-size: 14px; }
+.detected strong { color: var(--ok); }
 
 /* navegação */
 .nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--sheet); border-top: 1px solid var(--rule); padding-bottom: env(safe-area-inset-bottom, 0px); }
@@ -251,6 +272,7 @@ details.more[open] summary::before { content: "– "; }
       <p>Do Word ou do Google Docs (Arquivo › Baixar › Microsoft Word). Negrito, itálico, imagens, tabelas e notas de rodapé vêm junto.</p>
       <div class="file-name" id="fileStatus" hidden></div>
     </div>
+    <div class="detected" id="detected" hidden></div>
 
     <div class="banner" id="sampleBanner">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="flex:none;color:var(--pen);margin-top:1px"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>
@@ -274,10 +296,28 @@ details.more[open] summary::before { content: "– "; }
 
   <!-- 2. ESTRUTURA -->
   <section id="v-estrutura" data-view="estrutura" hidden>
-    <h1 class="view-title">Confira a estrutura</h1>
-    <p class="lede">Toque num parágrafo para mudar o que ele é. Títulos recebem a numeração automaticamente.</p>
-    <div class="filters" id="filters" role="toolbar" aria-label="Filtrar parágrafos"></div>
-    <ul class="blist" id="blist"></ul>
+    <div id="estruturaTexto">
+      <h1 class="view-title">Confira a estrutura</h1>
+      <p class="lede">Toque num parágrafo para mudar o que ele é. Títulos recebem a numeração automaticamente.</p>
+      <div class="filters" id="filters" role="toolbar" aria-label="Filtrar parágrafos"></div>
+      <ul class="blist" id="blist"></ul>
+    </div>
+    <div id="estruturaModelo" hidden>
+      <h1 class="view-title">O que será ajustado</h1>
+      <p class="lede">O modelo fica como está: tabelas, orientação da folha e cabeçalho com o logo. Nenhuma palavra é trocada, só a formatação.</p>
+      <div class="model-file" id="modelFile"></div>
+      <ul class="fixes" id="fixes"></ul>
+      <div id="modelWarnWrap" hidden>
+        <h2 class="sec">Confira antes de entregar</h2>
+        <p class="help" style="margin:0 0 10px">O app não mexe no conteúdo. Estes trechos parecem ter algum problema no texto original:</p>
+        <ul class="cwarns" id="modelWarns"></ul>
+      </div>
+      <div class="empty-model" id="modelEmpty" hidden>
+        <p><strong>Importe o arquivo do modelo.</strong> Este modo ajusta o próprio .docx que a faculdade passou (plano de aula, ficha, relatório em tabela).</p>
+        <button class="btn primary" type="button" data-go-btn="texto">Importar arquivo</button>
+      </div>
+      <p class="note" id="modelSwitch">Prefere transformar em texto corrido, com capa e sumário? <button class="link" type="button" id="toTextMode">Tratar como trabalho do semestre</button></p>
+    </div>
   </section>
 
   <!-- 3. DADOS -->
@@ -286,7 +326,7 @@ details.more[open] summary::before { content: "– "; }
     <p class="lede" id="dadosLede">Esses dados montam a capa e os elementos antes da introdução.</p>
     <div class="kind-pill"><span>Tipo:</span> <strong id="kindName">Trabalho do semestre</strong> <button class="link" type="button" id="kindChange">trocar</button></div>
     <form id="infoForm" class="stack" autocomplete="off">
-      <div class="card stack">
+      <div class="card stack" data-show="trabalho artigo tcc">
         <div class="field"><label for="f-autores">Autor(es)</label><textarea id="f-autores" data-k="autores" rows="2" style="min-height:64px" placeholder="Ex.: Maria Aparecida dos Santos"></textarea><p class="help">Um nome por linha, para trabalhos em grupo.</p></div>
         <div class="field"><label for="f-titulo">Título</label><input type="text" id="f-titulo" data-k="titulo" placeholder="Ex.: O brincar na Educação Infantil"></div>
         <div class="field"><label for="f-subtitulo">Subtítulo <span class="opt">(opcional)</span></label><input type="text" id="f-subtitulo" data-k="subtitulo" placeholder="Ex.: práticas lúdicas e desenvolvimento"></div>
@@ -316,8 +356,8 @@ details.more[open] summary::before { content: "– "; }
         </div>
       </div>
 
-      <h2 class="sec" id="resumoSec">Resumo</h2>
-      <div class="card stack">
+      <h2 class="sec" id="resumoSec" data-show="trabalho artigo tcc">Resumo</h2>
+      <div class="card stack" data-show="trabalho artigo tcc">
         <div class="field"><label for="f-resumo">Resumo em português</label><textarea id="f-resumo" data-k="resumo" rows="6" placeholder="Parágrafo único, com objetivo, método, resultados e conclusão."></textarea><p class="help" id="resumoCount"></p></div>
         <div class="field"><label for="f-palavrasChave">Palavras-chave</label><input type="text" id="f-palavrasChave" data-k="palavrasChave" placeholder="Ex.: Brincar. Educação infantil. Ludicidade."><p class="help">De 3 a 5. O app separa por ponto, com inicial maiúscula, como pede o manual da UNICID.</p></div>
         <div class="field"><label for="f-abstract">Abstract <span class="opt">(opcional)</span></label><textarea id="f-abstract" data-k="abstract" rows="5" placeholder="Resumo em inglês, se o professor pedir."></textarea></div>
@@ -344,7 +384,7 @@ details.more[open] summary::before { content: "– "; }
         <div class="field"><span class="lab">Fonte</span>
           <div class="seg" id="fontSeg" role="group" aria-label="Fonte"><button type="button" data-font="Times New Roman">Times New Roman</button><button type="button" data-font="Arial">Arial</button></div>
         </div>
-        <div class="field" data-show="trabalho artigo"><span class="lab">Entrelinha do texto</span>
+        <div class="field" data-show="trabalho artigo modelo"><span class="lab" id="lineLabel">Entrelinha do texto</span>
           <div class="seg" id="lineSeg" role="group" aria-label="Entrelinha"><button type="button" data-ent="1.5">1,5</button><button type="button" data-ent="1">Simples</button></div>
           <p class="help" id="lineHelp"></p>
         </div>
@@ -352,6 +392,7 @@ details.more[open] summary::before { content: "– "; }
         <div class="toggle" data-show="trabalho"><div><div style="font-weight:700">Folha de rosto</div><p class="help" style="margin:0">Repete autor e título, com disciplina e professor.</p></div><label class="switch"><input type="checkbox" id="f-folhaRosto" data-k="folhaRosto" aria-label="Incluir folha de rosto"><span></span></label></div>
         <div class="toggle" data-show="trabalho"><div><div style="font-weight:700">Sumário</div><p class="help" style="margin:0">Gerado a partir dos títulos, já com as páginas.</p></div><label class="switch"><input type="checkbox" id="f-sumario" data-k="sumario" aria-label="Incluir sumário"><span></span></label></div>
         <div class="toggle" data-show="trabalho artigo"><div><div style="font-weight:700">Seção principal em página nova</div><p class="help" style="margin:0">Cada título de nível 1 começa no alto de uma página.</p></div><label class="switch"><input type="checkbox" id="f-novaPagina" data-k="novaPagina" aria-label="Seção principal em página nova"><span></span></label></div>
+        <div class="toggle" data-show="modelo"><div><div style="font-weight:700">Corrigir digitação</div><p class="help" style="margin:0">Tira espaço antes de vírgula e dois-pontos e troca 1° por 1º.</p></div><label class="switch"><input type="checkbox" id="f-corrigir" data-k="corrigirDigitacao" aria-label="Corrigir digitação"><span></span></label></div>
         <div class="toggle"><div><div style="font-weight:700">Ordenar referências</div><p class="help" style="margin:0">Em ordem alfabética pelo sobrenome.</p></div><label class="switch"><input type="checkbox" id="f-ordenar" data-k="ordenarReferencias" aria-label="Ordenar referências"><span></span></label></div>
       </div>
     </form>
@@ -376,11 +417,11 @@ details.more[open] summary::before { content: "– "; }
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
         <span>Gerar e baixar .docx</span>
       </button>
-      <p class="note" style="margin:0">O sumário já sai com as páginas calculadas. Ao abrir no Word do computador, aceite atualizar os campos para conferir os números.</p>
+      <p class="note" style="margin:0" id="genNote">O sumário já sai com as páginas calculadas. Ao abrir no Word do computador, aceite atualizar os campos para conferir os números.</p>
     </div>
 
     <h2 class="sec">Regras aplicadas</h2>
-    <div class="card spec">
+    <div class="card spec" id="specCard">
       <svg class="page-svg" viewBox="-14 -12 238 324" role="img" aria-label="Folha A4 com margens de 3 cm em cima e à esquerda e 2 cm embaixo e à direita">
         <rect class="pg" x="0" y="0" width="210" height="297" rx="2"/>
         <rect class="ar" x="30" y="30" width="160" height="247"/>
@@ -431,5 +472,7 @@ details.more[open] summary::before { content: "– "; }
 
 <script src="https://cdn.jsdelivr.net/npm/mammoth@1.12.3/mammoth.browser.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/docx@9.7.1/dist/index.iife.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
 <script>/*@ENGINE@*/</script>
+<script>/*@MODELO@*/</script>
 <script>/*@APP@*/</script>

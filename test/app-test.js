@@ -14,10 +14,10 @@ JSDOM.fromFile(file, {
   const w = dom.window;
   await new Promise((r) => w.addEventListener('load', r));
   await new Promise((r) => setTimeout(r, 300));
-  const ok = { docx: !!w.docx, mammoth: !!w.mammoth, motor: !!w.FormataEngine, tipos: w.document.querySelectorAll('#kinds .kind').length };
+  const ok = { docx: !!w.docx, mammoth: !!w.mammoth, fflate: !!w.fflate, motor: !!w.FormataEngine, modelo: !!w.FormataModelo, tipos: w.document.querySelectorAll('#kinds .kind').length };
   w.document.querySelector('[data-go="estrutura"]').click();
   ok.paragrafos = w.document.querySelectorAll('#blist .row').length;
   console.log('app instalado:', JSON.stringify(ok), errors.length ? 'ERROS: ' + errors.join(' | ') : 'sem erros');
-  const fail = !ok.docx || !ok.mammoth || !ok.motor || ok.tipos !== 3 || !ok.paragrafos || errors.length;
+  const fail = !ok.docx || !ok.mammoth || !ok.fflate || !ok.motor || !ok.modelo || ok.tipos !== 4 || !ok.paragrafos || errors.length;
   process.exit(fail ? 1 : 0);
 });

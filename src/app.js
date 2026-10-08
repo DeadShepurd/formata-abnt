@@ -18,10 +18,13 @@
     ano: String(new Date().getFullYear()), autores: '', titulo: '', subtitulo: '', disciplina: '', orientador: '', coorientador: '',
     resumo: '', palavrasChave: '', abstract: '', keywords: '', dedicatoria: '', agradecimentos: '', epigrafe: '',
     notaAutores: '', notaOrientador: '',
-    aprovacao: false, banca: '', fonte: PROF.fonte, ordenarReferencias: true,
+    aprovacao: false, banca: '', fonte: PROF.fonte, ordenarReferencias: true, corrigirDigitacao: true,
   }, typeDefaults('trabalho'));
+  const RAW_KEY = 'formata-abnt:arquivo';
+  const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  const M = window.FormataModelo;
 
-  const S = { info: defaults(), blocks: [], notes: {}, source: { kind: 'sample', name: '' }, view: 'texto', filter: 'all', sheetId: null };
+  const S = { info: defaults(), blocks: [], notes: {}, source: { kind: 'sample', name: '' }, view: 'texto', filter: 'all', sheetId: null, raw: null, rawName: '', model: null, modelKey: '' };
 
   // ---------- TCC de exemplo (fictício) ----------
   const SAMPLE = `
@@ -61,6 +64,40 @@
       try { localStorage.setItem(KEY, JSON.stringify({ info: S.info, source: { kind: 'sample', name: '' } })); } catch (e2) { /* sem armazenamento */ }
     }
   }
+  function toB64(u8) {
+    let s = '';
+    for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
+    return btoa(s);
+  }
+  function fromB64(b64) {
+    const bin = atob(b64);
+    const u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    return u8;
+  }
+  function saveRaw() {
+    try {
+      if (S.raw) localStorage.setItem(RAW_KEY, JSON.stringify({ name: S.rawName, b64: toB64(S.raw) }));
+      else localStorage.removeItem(RAW_KEY);
+    } catch (e) { /* arquivo grande demais para guardar: fica só na memória */ }
+  }
+  function restoreRaw() {
+    try {
+      const d = JSON.parse(localStorage.getItem(RAW_KEY) || 'null');
+      if (d && d.b64) { S.raw = fromB64(d.b64); S.rawName = d.name || 'trabalho.docx'; }
+    } catch (e) { /* ignora */ }
+  }
+
+  // ---------- modo modelo ----------
+  const modelSettings = () => ({ fonte: S.info.fonte, entrelinha: S.info.entrelinha, corrigirDigitacao: S.info.corrigirDigitacao !== false, ordenarReferencias: S.info.ordenarReferencias !== false });
+  function getModel() {
+    if (!S.raw || !M || !window.fflate) return null;
+    const key = JSON.stringify(modelSettings()) + S.raw.length + S.rawName;
+    if (S.model && S.modelKey === key) return S.model;
+    try { S.model = M.analyze(S.raw, modelSettings()); S.modelKey = key; } catch (e) { console.error(e); S.model = { error: String(e && e.message || e) }; S.modelKey = key; }
+    return S.model;
+  }
+
   function restore() {
     try {
       const raw = localStorage.getItem(KEY);
@@ -104,12 +141,22 @@
     try {
       if (!window.mammoth) throw new Error('leitor não carregou');
       const buf = await file.arrayBuffer();
+      const bytes = new Uint8Array(buf.slice(0));
+      let rep = null;
+      try { if (M && window.fflate) rep = M.analyze(bytes, {}); } catch (e) { rep = null; }
       const res = await window.mammoth.convertToHtml({ arrayBuffer: buf }, E.mammothOptions(window.mammoth));
       const parsed = E.htmlToBlocks(res.value, new DOMParser());
-      if (!parsed.blocks.length) { st.textContent = 'Não encontrei texto em ' + file.name + '.'; return; }
+      if (!parsed.blocks.length && !(rep && rep.stats.chars)) { st.textContent = 'Não encontrei texto em ' + file.name + '.'; return; }
+      S.raw = bytes; S.rawName = file.name; S.model = null;
+      saveRaw();
+      const isModel = !!(rep && rep.stats.templateLike);
+      if (isModel) Object.assign(S.info, typeDefaults('modelo'), { fonte: rep.stats.suggestedFont });
+      else if (S.info.tipo === 'modelo') Object.assign(S.info, typeDefaults('trabalho'), { fonte: PROF.fonte });
       load(parsed, { kind: 'docx', name: file.name });
+      renderKinds();
+      fillForm();
       st.textContent = file.name;
-      toast('Texto importado. Confira a estrutura.');
+      toast(isModel ? 'Modelo em tabela reconhecido. O app vai manter o modelo e só arrumar a formatação.' : 'Texto importado. Confira a estrutura.');
       go('estrutura');
     } catch (e) {
       st.textContent = 'Não consegui ler ' + file.name + '. Se ele estiver aberto em outro app, feche e tente de novo.';
@@ -166,6 +213,10 @@
   }
 
   function renderList() {
+    const isModel = S.info.tipo === 'modelo';
+    $('#estruturaTexto').hidden = isModel;
+    $('#estruturaModelo').hidden = !isModel;
+    if (isModel) { renderModelo(); return; }
     renderFilters();
     const ul = $('#blist');
     ul.innerHTML = '';
@@ -213,6 +264,60 @@
     });
     if (!shown) { const li = document.createElement('li'); li.className = 'empty'; li.textContent = 'Nada neste filtro.'; frag.appendChild(li); }
     ul.appendChild(frag);
+  }
+
+  function renderModelo() {
+    const rep = getModel();
+    const has = !!S.raw && rep && !rep.error;
+    $('#modelEmpty').hidden = !!S.raw;
+    $('#fixes').hidden = !has;
+    $('#modelFile').hidden = !has;
+    $('#modelWarnWrap').hidden = true;
+    const fx = $('#fixes');
+    fx.innerHTML = '';
+    if (S.raw && rep && rep.error) {
+      $('#modelEmpty').hidden = false;
+      $('#modelEmpty').querySelector('p').textContent = 'Não consegui ler este arquivo como modelo: ' + rep.error;
+      return;
+    }
+    if (!has) return;
+    const chips = [S.rawName];
+    if (rep.stats.landscape) chips.push('folha deitada');
+    if (rep.stats.tables) chips.push(rep.stats.tables + (rep.stats.tables === 1 ? ' tabela' : ' tabelas'));
+    chips.push(rep.stats.textInTables + '% do texto em tabelas');
+    if (rep.stats.fromPdf) chips.push('convertido de PDF');
+    const mf = $('#modelFile');
+    mf.innerHTML = '';
+    chips.forEach((c) => { const sp = document.createElement('span'); sp.textContent = c; mf.appendChild(sp); });
+    if (!rep.fixes.length) {
+      const li = document.createElement('li');
+      li.innerHTML = '<span class="ck" aria-hidden="true">✓</span><span class="lb">Nada para ajustar: o arquivo já está padronizado.</span><span></span>';
+      fx.appendChild(li);
+    }
+    rep.fixes.forEach((f) => {
+      const li = document.createElement('li');
+      li.innerHTML = '<span class="ck" aria-hidden="true">✓</span><span><div class="lb"></div><div class="dt"></div><div class="ex"></div></span><span class="ct"></span>';
+      li.querySelector('.lb').textContent = f.label;
+      const dt = li.querySelector('.dt');
+      if (f.detail) dt.textContent = f.detail; else dt.remove();
+      const ex = li.querySelector('.ex');
+      (f.examples || []).slice(0, 2).forEach((e) => { const d = document.createElement('span'); d.textContent = e; ex.appendChild(d); });
+      if (!ex.children.length) ex.remove();
+      li.querySelector('.ct').textContent = f.count != null ? '×' + f.count : '';
+      fx.appendChild(li);
+    });
+    const ws = rep.warnings || [];
+    $('#modelWarnWrap').hidden = !ws.length;
+    const wl = $('#modelWarns');
+    wl.innerHTML = '';
+    ws.forEach((w) => {
+      const li = document.createElement('li');
+      li.textContent = w.msg;
+      const q = document.createElement('q');
+      q.textContent = w.text;
+      li.appendChild(q);
+      wl.appendChild(li);
+    });
   }
 
   // ---------- folha de tipos ----------
@@ -289,7 +394,7 @@
   }
 
   // ---------- tipo de trabalho ----------
-  const KIND_ORDER = ['trabalho', 'artigo', 'tcc'];
+  const KIND_ORDER = ['trabalho', 'modelo', 'artigo', 'tcc'];
   function renderKinds() {
     const box = $('#kinds');
     box.innerHTML = '';
@@ -310,7 +415,10 @@
   }
   function setKind(id) {
     if (S.info.tipo === id) return;
+    const wasModel = S.info.tipo === 'modelo';
     Object.assign(S.info, typeDefaults(id));
+    if (id === 'modelo') { const r = getModel(); S.info.fonte = (r && r.stats && r.stats.suggestedFont) || S.info.fonte; }
+    else if (wasModel) S.info.fonte = PROF.fonte;
     save();
     renderKinds();
     fillForm();
@@ -326,7 +434,19 @@
       ? 'No artigo, título, autores e resumo vão na primeira página, antes da introdução.'
       : t === 'tcc' ? 'Esses dados montam capa, folha de rosto e os elementos antes da introdução.'
       : 'Esses dados montam a capa e o que vem antes da introdução.';
-    $('#lineHelp').textContent = t === 'artigo' ? 'O manual da UNICID recomenda espaço simples no artigo.' : 'A ABNT usa 1,5 em trabalhos acadêmicos. Use simples se o professor pedir.';
+    $('#lineHelp').textContent = t === 'artigo' ? 'O manual da UNICID recomenda espaço simples no artigo.' : t === 'modelo' ? 'Simples é o comum em planos de aula e fichas.' : 'A ABNT usa 1,5 em trabalhos acadêmicos. Use simples se o professor pedir.';
+    $('#lineLabel').textContent = t === 'modelo' ? 'Entrelinha dentro das tabelas' : 'Entrelinha do texto';
+    if (t === 'modelo') $('#dadosLede').textContent = 'Escolha a fonte e o espaçamento. O resto do modelo fica como está.';
+    const det = $('#detected');
+    const rep = t === 'modelo' ? getModel() : null;
+    det.hidden = !(rep && !rep.error);
+    if (rep && !rep.error) {
+      det.innerHTML = '<strong>Modelo em tabela.</strong> <span></span>';
+      const bits = [];
+      if (rep.stats.landscape) bits.push('folha deitada');
+      bits.push(rep.stats.textInTables + '% do texto em tabelas');
+      det.querySelector('span').textContent = 'Este arquivo segue um modelo (' + bits.join(', ') + '). O app vai manter o modelo e só arrumar a formatação.';
+    }
     wordCount();
   }
   function wordCount() {
@@ -376,7 +496,59 @@
     const post = plan.filter((it) => it.type === 'post').map((it) => it.title);
     return { c, heads, post, plan };
   }
+  function renderBaixarModelo() {
+    const rep = getModel();
+    const ul = $('#parts');
+    ul.innerHTML = '';
+    const ok = rep && !rep.error;
+    const items = ok ? rep.fixes.map((f) => [f.label, true, f.count != null ? '×' + f.count : '']) : [];
+    items.unshift(['Modelo mantido: tabelas, folha e cabeçalho', !!S.raw, '']);
+    items.forEach(([nm, yes, meta]) => {
+      const li = document.createElement('li');
+      li.className = yes ? 'yes' : 'no';
+      li.innerHTML = '<span class="st" aria-hidden="true"></span><span class="nm"></span><span class="meta"></span>';
+      li.querySelector('.st').textContent = yes ? '✓' : '–';
+      li.querySelector('.nm').textContent = nm;
+      li.querySelector('.meta').textContent = yes ? meta : 'sem arquivo';
+      ul.appendChild(li);
+    });
+    const wl = $('#warns');
+    wl.innerHTML = '';
+    let n = 0;
+    if (!S.raw) {
+      const li = document.createElement('li');
+      const sp = document.createElement('span'); sp.textContent = 'Importe o arquivo .docx do modelo.';
+      const bt = document.createElement('button'); bt.type = 'button'; bt.className = 'link'; bt.textContent = 'Importar';
+      bt.addEventListener('click', () => go('texto'));
+      li.append(sp, bt); wl.appendChild(li); n++;
+    }
+    if (ok) (rep.warnings || []).forEach((w) => {
+      const li = document.createElement('li');
+      const sp = document.createElement('span'); sp.textContent = w.msg + ' “' + w.text + '”';
+      li.appendChild(sp); wl.appendChild(li); n++;
+    });
+    $('#warnWrap').hidden = !n;
+    const rl = $('#rules');
+    rl.innerHTML = '';
+    const ent = Number(S.info.entrelinha) === 1 ? 'simples' : String(S.info.entrelinha).replace('.', ',');
+    [['Fonte', S.info.fonte + ' 12'], ['Entrelinha nas tabelas', ent], ['Margem interna das células', '0,19 cm'], ['Referências', 'simples · 6 pt antes e depois'], ['Margens e orientação', 'as do modelo'], ['Texto', 'nenhuma palavra trocada']].forEach(([k, v]) => {
+      const li = document.createElement('li');
+      li.innerHTML = '<span></span><span></span>';
+      li.children[0].textContent = k; li.children[1].textContent = v;
+      rl.appendChild(li);
+    });
+    $('#specCard .page-svg').setAttribute('hidden', '');
+    $('#specCard').classList.add('single');
+    $('#genNote').textContent = 'O arquivo sai com o mesmo nome e “- ajustado” no final. O original não é alterado.';
+    $('#rulesNote').textContent = 'Fonte e tamanho seguem o manual da Biblioteca UNICID (Arial ou Times New Roman 12). Margens, orientação e desenho das tabelas continuam os do modelo.';
+    $('#baixarLede').textContent = 'Modelo da faculdade' + (S.rawName ? ' · ' + S.rawName : '');
+  }
   function renderBaixar() {
+    if (S.info.tipo === 'modelo') { renderBaixarModelo(); return; }
+    $('#specCard .page-svg').removeAttribute('hidden');
+    $('#specCard').classList.remove('single');
+    $('#genNote').textContent = 'O sumário já sai com as páginas calculadas. Ao abrir no Word do computador, aceite atualizar os campos para conferir os números.';
+    $('#rulesNote').textContent = 'Regras das “Normas para elaboração de artigo científico” da Biblioteca Prof. Lúcio de Sousa (UNICID), completadas pela ABNT NBR 14724:2024 para capa, folha de rosto e sumário.';
     const I = S.info, A = analysis();
     const cfg = E.resolveConfig(PROF, I);
     const has = (k) => !!String(I[k] || '').trim();
@@ -500,7 +672,7 @@
   let busy = false;
   async function generate() {
     if (busy) return;
-    if (!window.docx) { toast('O gerador ainda está carregando. Tente de novo em instantes.'); return; }
+    if (S.info.tipo === 'modelo' ? !(M && window.fflate) : !window.docx) { toast('O gerador ainda está carregando. Tente de novo em instantes.'); return; }
     busy = true;
     const btn = $('#genBtn');
     btn.disabled = true;
@@ -508,11 +680,19 @@
     const old = label.textContent;
     label.textContent = 'Gerando…';
     try {
-      await fontsReady(S.info.fonte);
-      const res = E.buildDocument({ profile: PROF, info: S.info, blocks: S.blocks, notes: S.notes }, { measure: ctx ? measure : null });
-      const blob = await window.docx.Packer.toBlob(res.doc);
-      const filename = slug(S.info.titulo) + ' - ABNT.docx';
-      res.warnings.forEach((w) => toast(w));
+      let blob, filename;
+      if (S.info.tipo === 'modelo') {
+        if (!S.raw) { toast('Importe o arquivo do modelo primeiro.'); go('texto'); return; }
+        const out = M.process(S.raw, modelSettings());
+        blob = new Blob([out.bytes], { type: DOCX_MIME });
+        filename = (S.rawName || 'trabalho.docx').replace(/\.docx$/i, '').replace(/[\\/:*?"<>|]+/g, ' ').trim() + ' - ajustado.docx';
+      } else {
+        await fontsReady(S.info.fonte);
+        const res = E.buildDocument({ profile: PROF, info: S.info, blocks: S.blocks, notes: S.notes }, { measure: ctx ? measure : null });
+        blob = await window.docx.Packer.toBlob(res.doc);
+        filename = slug(S.info.titulo) + ' - ABNT.docx';
+        res.warnings.forEach((w) => toast(w));
+      }
       const dl = await downloadsP;
       if (dl) {
         try {
@@ -536,7 +716,7 @@
       }
     } catch (e) {
       console.error(e);
-      toast('Algo deu errado ao montar o arquivo. Confira se há títulos e texto marcados.');
+      toast(S.info.tipo === 'modelo' ? 'Não consegui ajustar este arquivo. Tente abrir e salvar de novo no Word e importar outra vez.' : 'Algo deu errado ao montar o arquivo. Confira se há títulos e texto marcados.');
     } finally {
       busy = false;
       btn.disabled = false;
@@ -587,6 +767,8 @@
       if (!txt.trim()) return;
       const parsed = pastedHTML && pastedText === txt ? E.htmlToBlocks(pastedHTML, new DOMParser()) : E.textToBlocks(txt);
       if (!parsed.blocks.length) { toast('Não encontrei texto para usar.'); return; }
+      S.raw = null; S.rawName = ''; S.model = null; saveRaw();
+      if (S.info.tipo === 'modelo') { Object.assign(S.info, typeDefaults('trabalho'), { fonte: PROF.fonte }); renderKinds(); }
       load(parsed, { kind: 'paste', name: '' });
       toast('Texto carregado. Confira a estrutura.');
       go('estrutura');
@@ -596,12 +778,16 @@
     $('#scrim').addEventListener('click', closeSheet);
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && S.sheetId) closeSheet(); });
     $('#genBtn').addEventListener('click', generate);
+    $('#toTextMode').addEventListener('click', () => { setKind('trabalho'); renderList(); });
+    $$('[data-go-btn]').forEach((b) => b.addEventListener('click', () => go(b.dataset.goBtn)));
     bindForm();
   }
 
   // ---------- início ----------
   bind();
+  restoreRaw();
   if (!restore()) loadSample(); else { fillForm(); }
+  if (S.info.tipo === 'modelo' && !S.raw) Object.assign(S.info, typeDefaults('trabalho'), { fonte: PROF.fonte });
   renderKinds();
   fillForm();
   const h = (location.hash || '').replace('#', '');

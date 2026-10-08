@@ -244,6 +244,47 @@
       });
     }
 
+    // parágrafos de uma célula, na ordem: <p>, itens de lista (com marcador) e texto solto
+    function cellParas(td, fmt) {
+      const paras = [];
+      let loose = [];
+      const pushLoose = () => { const r = finishRuns(loose); if (runsText(r).trim()) paras.push(r); loose = []; };
+      const visit = (node, depth) => {
+        node.childNodes.forEach((n) => {
+          if (n.nodeType === 3) { loose.push(Object.assign({ t: n.nodeValue }, fmt)); return; }
+          if (n.nodeType !== 1) return;
+          const tag = n.tagName;
+          if (tag === 'P' || /^H[1-6]$/.test(tag)) { pushLoose(); const r = []; collectInline(n, fmt, r); paras.push(finishRuns(r)); return; }
+          if (tag === 'UL' || tag === 'OL') {
+            pushLoose();
+            let k = 0;
+            n.childNodes.forEach((li) => {
+              if (li.nodeType !== 1 || li.tagName !== 'LI') return;
+              k++;
+              const mark = tag === 'OL' ? String.fromCharCode(96 + Math.min(26, k)) + ') ' : '– ';
+              const r = [Object.assign({ t: '    '.repeat(depth) + mark }, fmt)];
+              // texto do item (sem as sublistas, que viram itens próprios)
+              li.childNodes.forEach((c) => {
+                if (c.nodeType === 1 && (c.tagName === 'UL' || c.tagName === 'OL')) return;
+                if (c.nodeType === 3) r.push(Object.assign({ t: c.nodeValue }, fmt));
+                else if (c.nodeType === 1) collectInline(c, readFmt(c, fmt), r);
+              });
+              paras.push(finishRuns(r));
+              li.childNodes.forEach((c) => { if (c.nodeType === 1 && (c.tagName === 'UL' || c.tagName === 'OL')) visit({ childNodes: [c] }, depth + 1); });
+            });
+            return;
+          }
+          if (tag === 'TABLE') { pushLoose(); return; }
+          if (tag === 'BR') { loose.push(Object.assign({ t: ' ' }, fmt)); return; }
+          if (BLOCK.has(tag)) { pushLoose(); visit(n, depth); pushLoose(); return; }
+          collectInline(n, readFmt(n, fmt), loose);
+        });
+      };
+      visit(td, 0);
+      pushLoose();
+      return paras.length ? paras : [[]];
+    }
+
     function readTable(table) {
       const rows = [];
       table.querySelectorAll('tr').forEach((tr) => {
@@ -251,11 +292,7 @@
         const cells = [];
         tr.childNodes.forEach((td) => {
           if (td.nodeType !== 1 || !/^(TD|TH)$/.test(td.tagName)) return;
-          const paras = [];
-          const ps = td.querySelectorAll('p');
-          if (ps.length) ps.forEach((p) => { const r = []; collectInline(p, td.tagName === 'TH' ? { b: true } : {}, r); paras.push(finishRuns(r)); });
-          else { const r = []; collectInline(td, td.tagName === 'TH' ? { b: true } : {}, r); paras.push(finishRuns(r)); }
-          cells.push({ paras, colspan: parseInt(td.getAttribute('colspan') || '1', 10) || 1 });
+          cells.push({ paras: cellParas(td, td.tagName === 'TH' ? { b: true } : {}), colspan: parseInt(td.getAttribute('colspan') || '1', 10) || 1 });
         });
         if (cells.length) rows.push(cells);
       });
@@ -559,6 +596,8 @@
     trabalho: { id: 'trabalho', label: 'Trabalho do semestre', short: 'Trabalho', hint: 'Atividades e trabalhos das disciplinas', entrelinha: 1.5, novaPagina: true, capa: true, folhaRosto: false, sumario: true },
     artigo: { id: 'artigo', label: 'Artigo científico', short: 'Artigo', hint: 'Título, autores e resumo na 1ª página', entrelinha: 1, novaPagina: false, capa: false, folhaRosto: false, sumario: false },
     tcc: { id: 'tcc', label: 'TCC', short: 'TCC', hint: 'Trabalho de conclusão de curso', entrelinha: 1.5, novaPagina: true, capa: true, folhaRosto: true, sumario: true },
+    // ajusta o próprio arquivo do modelo (plano de aula, ficha, relatório em tabela): ver src/modelo.js
+    modelo: { id: 'modelo', label: 'Modelo da faculdade', short: 'Modelo', hint: 'Plano de aula e trabalhos em tabela: mantém o modelo e só arruma a formatação', entrelinha: 1, novaPagina: false, capa: false, folhaRosto: false, sumario: false },
   };
 
   function resolveConfig(prof, info) {

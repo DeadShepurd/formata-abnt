@@ -9,9 +9,10 @@ const read = (p) => fs.readFileSync(r(p), 'utf8');
 
 const shell = read('src/app.html');
 const engine = read('src/engine.js');
+const modelo = read('src/modelo.js');
 const app = read('src/app.js');
-if (/<\/script/i.test(engine + app)) throw new Error('"</script" dentro do JS');
-const inject = (html) => html.replace('/*@ENGINE@*/', () => engine).replace('/*@APP@*/', () => app);
+if (/<\/script/i.test(engine + modelo + app)) throw new Error('"</script" dentro do JS');
+const inject = (html) => html.replace('/*@ENGINE@*/', () => engine).replace('/*@MODELO@*/', () => modelo).replace('/*@APP@*/', () => app);
 
 // ---------- versão web ----------
 fs.mkdirSync(r('dist'), { recursive: true });
@@ -24,6 +25,7 @@ fs.mkdirSync(path.join(www, 'vendor'), { recursive: true });
 fs.mkdirSync(path.join(www, 'fonts'), { recursive: true });
 fs.copyFileSync(r('node_modules/mammoth/mammoth.browser.min.js'), path.join(www, 'vendor/mammoth.browser.min.js'));
 fs.copyFileSync(r('node_modules/docx/dist/index.iife.js'), path.join(www, 'vendor/docx.iife.js'));
+fs.copyFileSync(r('node_modules/fflate/umd/index.js'), path.join(www, 'vendor/fflate.js'));
 
 const faces = [
   ['Atkinson Hyperlegible', 'atkinson-hyperlegible', [[400, 'normal'], [700, 'normal'], [400, 'italic']]],
@@ -47,7 +49,8 @@ let body = shell
   .replace(/<link rel="preconnect"[^>]*>\s*/g, '')
   .replace(/<link rel="stylesheet" href="https:\/\/fonts\.googleapis\.com[^>]*>\s*/, '')
   .replace(/<script src="https:\/\/cdn\.jsdelivr\.net\/npm\/mammoth[^"]*"><\/script>/, '<script src="vendor/mammoth.browser.min.js"></script>')
-  .replace(/<script src="https:\/\/cdn\.jsdelivr\.net\/npm\/docx[^"]*"><\/script>/, '<script src="vendor/docx.iife.js"></script>');
+  .replace(/<script src="https:\/\/cdn\.jsdelivr\.net\/npm\/docx[^"]*"><\/script>/, '<script src="vendor/docx.iife.js"></script>')
+  .replace(/<script src="https:\/\/cdn\.jsdelivr\.net\/npm\/fflate[^"]*"><\/script>/, '<script src="vendor/fflate.js"></script>');
 if (/https?:\/\/(cdn|fonts)\./.test(body)) throw new Error('ainda há recurso externo no app instalado');
 body = inject(body);
 
