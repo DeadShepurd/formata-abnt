@@ -14,38 +14,51 @@ concurrency:
 
 jobs:
   apk:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
           cache: gradle
 
-      - uses: android-actions/setup-android@v3
+      - name: Preparar o Android SDK
+        run: |
+          mkdir -p logs
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKM" --licenses > logs/sdk.txt 2>&1 || true
+          "$SDKM" "platforms;android-36" "build-tools;35.0.0" >> logs/sdk.txt 2>&1
 
       - name: Instalar dependências
-        run: npm ci
+        run: |
+          set -o pipefail
+          npm ci 2>&1 | tee logs/npm-ci.txt
 
       - name: Testar o formatador
-        run: npm test
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee logs/testes.txt
 
       - name: Copiar o app para o projeto Android
-        run: npx cap sync android
+        run: |
+          set -o pipefail
+          npx cap sync android 2>&1 | tee logs/cap-sync.txt
 
       - name: Compilar o .apk
         working-directory: android
         run: |
+          set -o pipefail
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon --stacktrace
+          ./gradlew assembleRelease --no-daemon 2>&1 | tee ../logs/gradle.txt
 
       - name: Preparar o arquivo
         run: cp android/app/build/outputs/apk/release/app-release.apk formata-abnt.apk
@@ -64,3 +77,17 @@ jobs:
             --title "Formata ABNT 0.1.${{ github.run_number }}" \
             --notes "Baixe o arquivo formata-abnt.apk pelo celular Android e toque nele para instalar. Na primeira vez, o Android pede para permitir a instalação de apps desta fonte." \
             --latest
+
+      # Em caso de erro, mostra o trecho importante do registro como aviso na página da compilação
+      - name: Resumo do erro
+        if: failure()
+        run: |
+          enc() { sed 's/%/%25/g; s/\r//g' | sed ':a;N;$!ba;s/\n/%0A/g'; }
+          for f in logs/*.txt; do
+            [ -s "$f" ] || continue
+            name=$(basename "$f" .txt)
+            if grep -q "What went wrong" "$f"; then
+              echo "::error title=$name (motivo)::$(sed -n '/What went wrong/,/Try:/p' "$f" | head -n 40 | enc)"
+            fi
+            echo "::error title=$name (final)::$(tail -n 30 "$f" | enc)"
+          done
